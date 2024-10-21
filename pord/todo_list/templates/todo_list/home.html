@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'todo_list/styles.css' %}">
+</head>
+<body>
+    <h1>Welcome to Your To-Do List App!</h1>
+    <p><a href="{% url 'todo_list_view' %}">Go to your To-Do List</a></p>
+</body>
+</html>

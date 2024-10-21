@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class PordappConfig(AppConfig):
+class TodoListConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'pordApp'
+    name = 'todo_list'

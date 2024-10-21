@@ -9,7 +9,7 @@ dataBase = mysql.connector.connect(
 )
 
 #middleware
-# cursorObject = dataBase.cursor()
+cursorObject = dataBase.cursor()
 
 # cursorObject.execute("CREATE DATABASE 3340database")
 print("Hello data base 3340data")

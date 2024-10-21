@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'todo_list/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+        <ul class="task-list">
+            {% for task in tasks %}
+                <li class="task-item">
+                    {{ task.text }}
+                    <form method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="task_id" value="{{ task.id }}">
+                        <button type="submit" name="delete">Delete</button>
+                    </form>
+                </li> 
+            {% empty %}
+                <li class="no-task">You have no tasks.</li>
+            {% endfor %}
+        </ul>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="text" placeholder="Add a new task" required>
+            <button type="submit">Add</button>
+        </form>
+    </div>
+</body>
+</html>
