@@ -2,10 +2,24 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import TodoItem
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
-@login_required  # If you want to require login for the home page
+ # If you want to require login for the home page
 def home(request):
-    return render(request, 'todo_list/home.html')
+    # return render(request, 'todo_list/home.html', {})
+    if request.method == "POST":
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(request, username = username, password = password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, "Login Successful")
+                return redirect('home')
+            else:
+                messages.success(request, "Login Error")
+                return redirect('home')
+    else:
+        return render(request, 'todo_list/home.html', {})
 
 @login_required
 def todo_list_view(request):
