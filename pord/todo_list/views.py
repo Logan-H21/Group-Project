@@ -26,20 +26,33 @@ def todo_list_view(request):
     if request.method == 'POST':
         if 'delete' in request.POST:  # Check if the delete button was pressed
             task_id = request.POST.get('task_id')
-            task = get_object_or_404(TodoItem, id=task_id, user=request.user)  # Ensure the task belongs to the user
+            task = get_object_or_404(TodoItem, id=task_id, user=request.user) 
             task.delete()  # Delete the task
         else:
             text = request.POST.get('text')
             if text:
-                TodoItem.objects.create(text=text, user=request.user)  # Add a new task
+                TodoItem.objects.create(text=text, user=request.user)
                 return redirect('todo_list_view')
 
-    tasks = TodoItem.objects.filter(user=request.user)  # Get tasks for the logged-in user
+    tasks = TodoItem.objects.filter(user=request.user)
     return render(request, 'todo_list/todo_list.html', {'tasks': tasks})
 
+def login_user(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, "Login Successful")
+            return redirect('todo_list_view')
+        else:
+            messages.error(request, "Invalid username or password")
+            return redirect('home')
+    return render(request, 'todo_list/login.html')
 
-# def login_user(request):
-#     pass
-
-# def logout_user(request):
-#     pass
+@login_required
+def logout_user(request):
+    logout(request)
+    messages.success(request, "Logged out successfully")
+    return redirect('home')

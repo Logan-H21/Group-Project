@@ -9,6 +9,10 @@
 </head>
 <body>
     <div class="container">
+        <form action="{% url 'home' %}">
+            {% csrf_token %}
+            <button type="submit">Home</button>
+        </form>
         <h1>To-Do List</h1>
         <ul class="task-list">
             {% for task in tasks %}
@@ -28,6 +32,10 @@
             {% csrf_token %}
             <input type="text" name="text" placeholder="Add a new task" required>
             <button type="submit">Add</button>
+        </form>
+        <form method="POST" action="{% url 'logout_user' %}">
+            {% csrf_token %}
+            <button type="submit">Log-out</button>
         </form>
     </div>
 </body>
