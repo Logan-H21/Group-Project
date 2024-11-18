@@ -1,0 +1,405 @@
+/* TodoApp.css */
+.container {
+    min-height: 100vh;
+    background-color: #f3f4f6;
+    padding: 2rem;
+    animation: floatUp 0.8s ease-in-out;
+  }
+  
+  .auth-container {
+    min-height: 100vh;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: floatUp 0.8s ease-in-out;
+  }
+  
+  .auth-box {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 24rem;
+  }
+  
+  .auth-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  
+  .error-message {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #fee2e2;
+    color: #dc2626;
+    border-radius: 0.25rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-input {
+    width: 95%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+  
+  .btn {
+    width: 100%;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  .btn-primary {
+    background-color: #3b82f6;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #2563eb;
+  }
+  
+  .btn-danger {
+    background-color: #ef4444;
+    color: white;
+  }
+  
+  .btn-danger:hover {
+    background-color: #dc2626;
+  }
+  
+  .auth-switch {
+    width: 100%;
+    margin-top: 1rem;
+    color: #3b82f6;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .auth-switch:hover {
+    text-decoration: underline;
+  }
+  
+  .todo-container {
+    max-width: 42rem;
+    margin: 0 auto;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .welcome-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #ef4444;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    animation: floatUp 0.8s ease-in-out;
+  }
+  
+  .logout-btn:hover {
+    background-color: #dc2626;
+  }
+  
+  .todo-form {
+    margin-bottom: 2rem;
+  }
+  
+  .todo-input-group {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .todo-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+  }
+  
+  .todo-list {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* animation: floatUp 0.8s ease-in-out; */
+  }
+  
+  .todo-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .todo-item:last-child {
+    border-bottom: none;
+  }
+  
+  .todo-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+  }
+  
+  .todo-text {
+    flex: 1;
+  }
+  
+  .todo-text.completed {
+    text-decoration: line-through;
+    color: #6b7280;
+  }
+  
+  .delete-btn {
+    color: #ef4444;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    animation: floatUp 0.8s ease-in-out;
+  }
+  
+  .delete-btn:hover {
+    color: #dc2626;
+  }
+  
+  .empty-message {
+    color: #6b7280;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  /* intro animation */
+
+  @keyframes floatUp {
+    from {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Deleted task */
+
+  @keyframes crossFadeOut {
+    0% {
+      text-decoration: line-through;
+      opacity: 1;
+    }
+    100% {
+      text-decoration: line-through;
+      opacity: 0;
+      transform: translateX(-10px); /* Optional: small slide for added effect */
+    }
+  }
+  
+  /* Apply animation with class */
+  
+  .todo-item.fade-out {
+    animation: crossFadeOut 0.5s ease forwards;
+  }
+
+
+  /* Due date */
+
+  .due-date {
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin-left: auto;
+}
+
+.due-date.overdue {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+.due-date-input {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+}
+
+/* Description */
+
+.todo-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.description-input {
+    width: 97%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+    animation: floatUp 0.4s ease-in-out;
+}
+
+.description-toggle {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.description-toggle:hover {
+    background-color: #f3f4f6;
+}
+
+.todo-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    margin-left: 2.5rem;
+    font-style: italic;
+}
+
+/* ALL USERS TASKS */
+
+.all-todos-container {
+    display: flex;
+    gap: 2rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    animation: floatUp 0.8s ease-in-out;
+  }
+  
+  .user-todo-column {
+    min-width: 300px;
+    flex: 1;
+  }
+  
+  .column-header {
+    background-color: #f3f4f6;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #4b5563;
+    animation: floatUp 0.8s ease-in-out;
+  }
+  
+  .current-user-column {
+    background-color: #f0f9ff;
+  }
+  
+  .current-user-header {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  
+  /* Make the todo list scrollable if it gets too long */
+  .todo-list {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  /* Add subtle shadows to differentiate columns */
+  .user-todo-column {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    animation: floatUp 0.8s ease-in-out;
+  }
+  
+
+  /* Admin styles */
+.admin-panel {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .admin-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    color: #1e40af;
+  }
+  
+  .user-management {
+    margin-top: 1rem;
+  }
+  
+  .user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: #f8fafc;
+    border-radius: 0.25rem;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .user-info {
+    font-size: 0.875rem;
+    color: #4b5563;
+  }
+  
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .admin-todo-item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .admin-todo-item input {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+  }
+  
+  .admin-todo-item input[type="text"] {
+    flex: 1;
+  }

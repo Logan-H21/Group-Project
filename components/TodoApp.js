@@ -1,0 +1,549 @@
+// TodoApp.js
+import React, { useState, useEffect } from 'react';
+import { X, LogOut, PlusIcon, MinusIcon, Trash2, Edit2, Save, XCircle } from 'lucide-react';
+import './TodoApp.css';
+
+const TodoApp = () => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [formData, setFormData] = useState({ username: '', password: '', email: '' });
+    const [todos, setTodos] = useState([]);
+    const [allUsersTodos, setAllUsersTodos] = useState({});
+    const [allUsers, setAllUsers] = useState([]);
+    const [newTodo, setNewTodo] = useState('');
+    const [dueDate, setDueDate] = useState('');
+    const [error, setError] = useState('');
+    const [showDescription, setShowDescription] = useState(false);
+    const [description, setDescription] = useState('');
+    const [editingTodo, setEditingTodo] = useState(null);
+
+  const ADMIN_USERNAME = 'admin';
+  const ADMIN_PASSWORD = 'admin123';
+  const ADMIN_EMAIL = 'admin@example.com';
+
+  // testttttt
+
+  useEffect(() => {
+    const savedUsers = JSON.parse(localStorage.getItem('users')) || [];
+    if (!localStorage.getItem('users')) {
+      // Initialize with admin user if not exists
+      const initialUsers = [{
+        username: ADMIN_USERNAME,
+        password: ADMIN_PASSWORD,
+        email: ADMIN_EMAIL,
+        isAdmin: true
+      }];
+      localStorage.setItem('users', JSON.stringify(initialUsers));
+    }
+    if (!localStorage.getItem('todos')) {
+      localStorage.setItem('todos', JSON.stringify({}));
+    }
+  }, []);
+
+  useEffect(() => {
+    const savedUsers = JSON.parse(localStorage.getItem('users')) || [];
+    if (!localStorage.getItem('users')) {
+      // Initialize with admin user if not exists
+      const initialUsers = [{
+        username: ADMIN_USERNAME,
+        password: ADMIN_PASSWORD,
+        email: ADMIN_EMAIL,
+        isAdmin: true
+      }];
+      localStorage.setItem('users', JSON.stringify(initialUsers));
+    }
+    if (!localStorage.getItem('todos')) {
+      localStorage.setItem('todos', JSON.stringify({}));
+    }
+  }, []);
+
+    const handleInputChange = (e) => {
+        setFormData({
+        ...formData,
+        [e.target.name]: e.target.value
+        });
+    };
+
+    const handleRegister = (e) => {
+        e.preventDefault();
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        
+        if (users.some(user => user.username === formData.username)) {
+          setError('Username already exists');
+          return;
+        }
+    
+        const newUser = {
+          username: formData.username,
+          password: formData.password,
+          email: formData.email,
+          isAdmin: false
+        };
+    
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        const todos = JSON.parse(localStorage.getItem('todos')) || {};
+        todos[formData.username] = [];
+        localStorage.setItem('todos', JSON.stringify(todos));
+        
+        setError('');
+        setIsRegistering(false);
+        setFormData({ username: '', password: '', email: '' });
+      };
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        
+        // Check for admin login
+        if (
+          formData.username === ADMIN_USERNAME && 
+          formData.password === ADMIN_PASSWORD &&
+          formData.email === ADMIN_EMAIL
+        ) {
+          setCurrentUser(ADMIN_USERNAME);
+          setIsAdmin(true);
+          setIsLoggedIn(true);
+          setError('');
+          return;
+        }
+    
+        // Regular user login
+        const user = users.find(
+          u => u.username === formData.username && 
+               u.password === formData.password && 
+               u.email === formData.email
+        );
+    
+        if (user) {
+          setCurrentUser(user.username);
+          setIsLoggedIn(true);
+          setError('');
+          const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
+          setTodos(allTodos[user.username] || []);
+          setAllUsersTodos(allTodos);
+        } else {
+          setError('Invalid username or password');
+        }
+      };
+
+      const handleLogout = () => {
+        setIsLoggedIn(false);
+        setIsAdmin(false);
+        setCurrentUser(null);
+        setTodos([]);
+        setFormData({ username: '', password: '', email: '' });
+      };
+
+      const deleteUser = (username) => {
+        if (!isAdmin) return;
+    
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const updatedUsers = users.filter(user => user.username !== username);
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+    
+        const todos = JSON.parse(localStorage.getItem('todos')) || {};
+        delete todos[username];
+        localStorage.setItem('todos', JSON.stringify(todos));
+    
+        setAllUsers(updatedUsers.filter(user => !user.isAdmin));
+        setAllUsersTodos(todos);
+      };
+
+      const editTodo = (userId, todoId, updatedTodo) => {
+        if (!isAdmin) return;
+    
+        const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
+        const userTodos = allTodos[userId] || [];
+        
+        const updatedTodos = userTodos.map(todo =>
+          todo.id === todoId ? { ...todo, ...updatedTodo } : todo
+        );
+    
+        allTodos[userId] = updatedTodos;
+        localStorage.setItem('todos', JSON.stringify(allTodos));
+        setAllUsersTodos(allTodos);
+        setEditingTodo(null);
+      };
+
+    const addTodo = (e) => {
+        e.preventDefault();
+        if (!newTodo.trim()) return;
+
+            const newTodoItem = {
+            id: Date.now(),
+            text: newTodo,
+            dueDate: dueDate,
+            completed: false,
+            description: description.trim()
+            };
+
+            const updatedTodos = sortTodosByDate([...todos, newTodoItem]);
+            setTodos(updatedTodos);
+
+            const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
+            allTodos[currentUser] = updatedTodos;
+            localStorage.setItem('todos', JSON.stringify(allTodos));
+
+            // Reset form
+            setNewTodo('');
+            setDueDate('');
+            setDescription('');
+            setShowDescription(false);
+    };
+
+    const toggleTodo = (id) => {
+        const updatedTodos = todos.map(todo =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        );
+        setTodos(sortTodosByDate(updatedTodos));
+
+        const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
+        allTodos[currentUser] = updatedTodos;
+        localStorage.setItem('todos', JSON.stringify(allTodos));
+    };
+
+    const deleteTodo = (id) => {
+        const updatedTodos = todos.map(todo => 
+        todo.id === id ? { ...todo, isFadingOut: true } : todo
+        );
+        setTodos(updatedTodos);
+    
+        setTimeout(() => {
+        const filteredTodos = sortTodosByDate(updatedTodos.filter(todo => todo.id !== id));
+        setTodos(filteredTodos);
+    
+        const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
+        allTodos[currentUser] = filteredTodos;
+        localStorage.setItem('todos', JSON.stringify(allTodos));
+        }, 500);
+    };
+
+    const isDateOverdue = (date) => {
+        if (!date) return false;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day
+        const dueDate = new Date(date);
+        return dueDate < today;
+    };
+
+   // Helper function to sort todos by due date
+   const sortTodosByDate = (todoList) => {
+    return [...todoList].sort((a, b) => {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return new Date(a.dueDate) - new Date(b.dueDate);
+    });
+  };
+
+  // Admin Components
+  const AdminPanel = () => (
+    <div className="admin-panel">
+      <h2 className="admin-title">Admin Dashboard</h2>
+      <div className="user-management">
+        <h3>User Management</h3>
+        <div className="user-list">
+          {allUsers.map(user => (
+            <div key={user.username} className="user-item">
+              <span className="user-info">
+                {user.username} ({user.email})
+              </span>
+              <button
+                onClick={() => deleteUser(user.username)}
+                className="btn btn-danger btn-sm"
+                title="Delete User"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const AdminTodoItem = ({ todo, username }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedTodo, setEditedTodo] = useState({ ...todo });
+
+    const handleSave = () => {
+      editTodo(username, todo.id, editedTodo);
+      setIsEditing(false);
+    };
+
+    return (
+      <div className="todo-item admin-todo-item">
+        {isEditing ? (
+          <>
+            <input
+              type="text"
+              value={editedTodo.text}
+              onChange={(e) => setEditedTodo({ ...editedTodo, text: e.target.value })}
+              className="todo-input"
+            />
+            <input
+              type="date"
+              value={editedTodo.dueDate || ''}
+              onChange={(e) => setEditedTodo({ ...editedTodo, dueDate: e.target.value })}
+              className="due-date-input"
+            />
+            <button onClick={handleSave} className="btn btn-primary btn-sm">
+              <Save size={16} />
+            </button>
+            <button onClick={() => setIsEditing(false)} className="btn btn-danger btn-sm">
+              <XCircle size={16} />
+            </button>
+          </>
+        ) : (
+          <>
+            <span className={`todo-text ${todo.completed ? 'completed' : ''}`}>
+              {todo.text}
+            </span>
+            {todo.dueDate && (
+              <span className={`due-date ${isDateOverdue(todo.dueDate) ? 'overdue' : ''}`}>
+                Due: {new Date(todo.dueDate).toLocaleDateString()}
+              </span>
+            )}
+            <button onClick={() => setIsEditing(true)} className="btn btn-primary btn-sm">
+              <Edit2 size={16} />
+            </button>
+            <button
+              onClick={() => deleteTodo(username, todo.id)}
+              className="btn btn-danger btn-sm"
+            >
+              <Trash2 size={16} />
+            </button>
+          </>
+        )}
+      </div>
+    );
+  };
+  
+
+  const TodoList = ({ todos, isCurrentUser, username }) => (
+    <div className="todo-list">
+      {sortTodosByDate(todos).map(todo => (
+        <div key={todo.id} className={`todo-item ${todo.isFadingOut ? 'fade-out' : ''}`}>
+          {isCurrentUser && (
+            <input 
+              type="checkbox" 
+              checked={todo.completed} 
+              onChange={() => toggleTodo(todo.id)} 
+              className="todo-checkbox"
+            />
+          )}
+          <div>
+            <span className={`todo-text ${todo.completed ? 'completed' : ''}`}>
+              {todo.text}
+            </span>
+            {todo.description && (
+              <div className="todo-description">
+                {todo.description}
+              </div>
+            )}
+          </div>
+          {todo.dueDate && (
+            <span className={`due-date ${isDateOverdue(todo.dueDate) ? 'overdue' : ''}`}>
+              Due: {new Date(todo.dueDate).toLocaleDateString()}
+            </span>
+          )}
+          {isCurrentUser && (
+            <button onClick={() => deleteTodo(todo.id)} className="delete-btn">
+              <X size={18}/>
+            </button>
+          )}
+        </div>
+      ))}
+      {todos.length === 0 && (
+        <p className="empty-message">No tasks yet.</p>
+      )}
+    </div>
+  );
+
+
+
+
+
+//  _______________ HTMLLLLLLLLL _______________
+
+
+
+
+
+
+
+return (
+    <div className="container">
+      {!isLoggedIn ? (
+        <section className="Login">
+          <div className="auth-container">
+            <div className="auth-box">
+              <h1 className="auth-title">
+                {isRegistering ? 'Register' : 'Login'}
+              </h1>
+              
+              {error && (
+                <div className="error-message">
+                  {error}
+                </div>
+              )}
+              
+              <form onSubmit={isRegistering ? handleRegister : handleLogin}>
+                <div className="form-group">
+                  <input
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    required
+                  />
+                </div>
+                
+                <button type="submit" className="btn btn-primary">
+                  {isRegistering ? 'Register' : 'Login'}
+                </button>
+              </form>
+              
+              {!isRegistering && (
+                <button
+                  onClick={() => setIsRegistering(true)}
+                  className="auth-switch"
+                >
+                  Need an account? Register
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <div>
+          <div className="header">
+            <h1 className="welcome-text">
+              Welcome, {currentUser}! {isAdmin && '(Admin)'}
+            </h1>
+            <button onClick={handleLogout} className="logout-btn">
+              <LogOut size={18} />
+              Logout
+            </button>
+          </div>
+
+          {isAdmin ? (
+            <AdminPanel />
+          ) : (
+            <div className="todo-container">
+              {/* Current user's todo form */}
+                `<div className="user-todo-column current-user-column">
+                    <div className="column-header current-user-header">
+                    My Tasks
+                    </div>
+                    <form onSubmit={addTodo} className="todo-form">
+                    <div className="todo-input-group">
+                        <input
+                        type="text"
+                        value={newTodo}
+                        onChange={(e) => setNewTodo(e.target.value)}
+                        placeholder="Add a new task..."
+                        className="todo-input"
+                        />
+                        <input
+                        type="date"
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
+                        className="due-date-input"
+                        />
+                        <button 
+                        type="button"
+                        onClick={() => setShowDescription(!showDescription)}
+                        className="description-toggle"
+                        title={showDescription ? "Hide description" : "Add description"}
+                        >
+                        {showDescription ? <MinusIcon size={18} /> : <PlusIcon size={18} />}
+                        </button>
+                        <button type="submit" className="btn btn-primary">
+                        Add
+                        </button>
+                    </div>
+                    {showDescription && (
+                        <input
+                        type="text"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Add a description..."
+                        className="description-input"
+                        />
+                    )}
+                    </form>
+                    <TodoList 
+                    todos={todos} 
+                    isCurrentUser={true}
+                    username={currentUser}
+                    />
+                </div>
+            </div>
+          )}
+
+          {/* Display all users' todos with admin controls if admin */}
+          <div className="all-todos-container">
+            {Object.entries(allUsersTodos).map(([username, userTodos]) => (
+              <div key={username} className="user-todo-column">
+                <div className="column-header">
+                  {username}'s Tasks
+                </div>
+                <div className="todo-list">
+                  {isAdmin ? (
+                    userTodos.map(todo => (
+                      <AdminTodoItem
+                        key={todo.id}
+                        todo={todo}
+                        username={username}
+                      />
+                    ))
+                  ) : (
+                    // Regular TodoList component for non-admin users
+                    <TodoList
+                      todos={userTodos}
+                      isCurrentUser={username === currentUser}
+                      username={username}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TodoApp;
