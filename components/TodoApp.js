@@ -17,47 +17,38 @@ const TodoApp = () => {
     const [error, setError] = useState('');
     const [showDescription, setShowDescription] = useState(false);
     const [description, setDescription] = useState('');
-    const [editingTodo, setEditingTodo] = useState(null);
 
   const ADMIN_USERNAME = 'admin';
   const ADMIN_PASSWORD = 'admin123';
   const ADMIN_EMAIL = 'admin@example.com';
 
-  // testttttt
+    useEffect(() => {
+      const savedUsers = JSON.parse(localStorage.getItem('users')) || [];
+      const savedTodos = JSON.parse(localStorage.getItem('todos')) || {};
+      
+      // Initialize admin if not exists
+      if (!savedUsers.length) {
+          const initialUsers = [{
+              username: ADMIN_USERNAME,
+              password: ADMIN_PASSWORD,
+              email: ADMIN_EMAIL,
+              isAdmin: true
+          }];
+          localStorage.setItem('users', JSON.stringify(initialUsers));
+      }
+      
+      // Set initial todos if not exists
+      if (!localStorage.getItem('todos')) {
+          localStorage.setItem('todos', JSON.stringify({}));
+      }
 
-  useEffect(() => {
-    const savedUsers = JSON.parse(localStorage.getItem('users')) || [];
-    if (!localStorage.getItem('users')) {
-      // Initialize with admin user if not exists
-      const initialUsers = [{
-        username: ADMIN_USERNAME,
-        password: ADMIN_PASSWORD,
-        email: ADMIN_EMAIL,
-        isAdmin: true
-      }];
-      localStorage.setItem('users', JSON.stringify(initialUsers));
-    }
-    if (!localStorage.getItem('todos')) {
-      localStorage.setItem('todos', JSON.stringify({}));
-    }
-  }, []);
+      // Load all users and todos for admin view
+      if (currentUser === ADMIN_USERNAME) {
+          setAllUsers(savedUsers.filter(user => !user.isAdmin));
+          setAllUsersTodos(savedTodos);
+      }
+    }, [currentUser]);
 
-  useEffect(() => {
-    const savedUsers = JSON.parse(localStorage.getItem('users')) || [];
-    if (!localStorage.getItem('users')) {
-      // Initialize with admin user if not exists
-      const initialUsers = [{
-        username: ADMIN_USERNAME,
-        password: ADMIN_PASSWORD,
-        email: ADMIN_EMAIL,
-        isAdmin: true
-      }];
-      localStorage.setItem('users', JSON.stringify(initialUsers));
-    }
-    if (!localStorage.getItem('todos')) {
-      localStorage.setItem('todos', JSON.stringify({}));
-    }
-  }, []);
 
     const handleInputChange = (e) => {
         setFormData({
@@ -71,7 +62,7 @@ const TodoApp = () => {
         const users = JSON.parse(localStorage.getItem('users')) || [];
         
         if (users.some(user => user.username === formData.username)) {
-          setError('Username already exists');
+          setError('Username or email already exists');
           return;
         }
     
@@ -140,33 +131,38 @@ const TodoApp = () => {
 
       const deleteUser = (username) => {
         if (!isAdmin) return;
-    
+
+        // Update users in localStorage
         const users = JSON.parse(localStorage.getItem('users')) || [];
         const updatedUsers = users.filter(user => user.username !== username);
         localStorage.setItem('users', JSON.stringify(updatedUsers));
-    
+
+        // Update todos in localStorage
         const todos = JSON.parse(localStorage.getItem('todos')) || {};
         delete todos[username];
         localStorage.setItem('todos', JSON.stringify(todos));
-    
+
+        // Update state
         setAllUsers(updatedUsers.filter(user => !user.isAdmin));
         setAllUsersTodos(todos);
       };
 
-      const editTodo = (userId, todoId, updatedTodo) => {
+      const editTodo = (username, todoId, updatedTodo) => {
         if (!isAdmin) return;
-    
+
         const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
-        const userTodos = allTodos[userId] || [];
+        const userTodos = allTodos[username] || [];
         
         const updatedTodos = userTodos.map(todo =>
-          todo.id === todoId ? { ...todo, ...updatedTodo } : todo
+            todo.id === todoId ? { ...todo, ...updatedTodo } : todo
         );
-    
-        allTodos[userId] = updatedTodos;
+
+        // Update localStorage
+        allTodos[username] = updatedTodos;
         localStorage.setItem('todos', JSON.stringify(allTodos));
-        setAllUsersTodos(allTodos);
-        setEditingTodo(null);
+
+        // Update state
+        setAllUsersTodos({ ...allTodos });
       };
 
     const addTodo = (e) => {
@@ -243,83 +239,90 @@ const TodoApp = () => {
   // Admin Components
   const AdminPanel = () => (
     <div className="admin-panel">
-      <h2 className="admin-title">Admin Dashboard</h2>
-      <div className="user-management">
-        <h3>User Management</h3>
-        <div className="user-list">
-          {allUsers.map(user => (
-            <div key={user.username} className="user-item">
-              <span className="user-info">
-                {user.username} ({user.email})
-              </span>
-              <button
-                onClick={() => deleteUser(user.username)}
-                className="btn btn-danger btn-sm"
-                title="Delete User"
-              >
-                <Trash2 size={16} />
-              </button>
+        <h2 className="admin-title">Admin Dashboard</h2>
+        <div className="user-management">
+            <h3>User Management</h3>
+            <div className="user-list">
+                {allUsers.map(user => (
+                    <div key={user.username} className="user-item">
+                        <span className="user-info">
+                            {user.username} ({user.email})
+                        </span>
+                        <button
+                            onClick={() => deleteUser(user.username)}
+                            className="btn btn-danger btn-sm"
+                            title="Delete User"
+                        >
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                ))}
             </div>
-          ))}
         </div>
-      </div>
     </div>
-  );
+);
 
   const AdminTodoItem = ({ todo, username }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedTodo, setEditedTodo] = useState({ ...todo });
 
     const handleSave = () => {
-      editTodo(username, todo.id, editedTodo);
-      setIsEditing(false);
+        editTodo(username, todo.id, editedTodo);
+        setIsEditing(false);
+    };
+
+    const handleDelete = () => {
+        const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
+        const userTodos = allTodos[username] || [];
+        const updatedTodos = userTodos.filter(t => t.id !== todo.id);
+        
+        allTodos[username] = updatedTodos;
+        localStorage.setItem('todos', JSON.stringify(allTodos));
+        setAllUsersTodos({ ...allTodos });
     };
 
     return (
-      <div className="todo-item admin-todo-item">
-        {isEditing ? (
-          <>
-            <input
-              type="text"
-              value={editedTodo.text}
-              onChange={(e) => setEditedTodo({ ...editedTodo, text: e.target.value })}
-              className="todo-input"
-            />
-            <input
-              type="date"
-              value={editedTodo.dueDate || ''}
-              onChange={(e) => setEditedTodo({ ...editedTodo, dueDate: e.target.value })}
-              className="due-date-input"
-            />
-            <button onClick={handleSave} className="btn btn-primary btn-sm">
-              <Save size={16} />
-            </button>
-            <button onClick={() => setIsEditing(false)} className="btn btn-danger btn-sm">
-              <XCircle size={16} />
-            </button>
-          </>
-        ) : (
-          <>
-            <span className={`todo-text ${todo.completed ? 'completed' : ''}`}>
-              {todo.text}
-            </span>
-            {todo.dueDate && (
-              <span className={`due-date ${isDateOverdue(todo.dueDate) ? 'overdue' : ''}`}>
-                Due: {new Date(todo.dueDate).toLocaleDateString()}
-              </span>
+        <div className="todo-item admin-todo-item">
+            {isEditing ? (
+                <>
+                    <input
+                        type="text"
+                        value={editedTodo.text}
+                        onChange={(e) => setEditedTodo({ ...editedTodo, text: e.target.value })}
+                        className="todo-input"
+                    />
+                    <input
+                        type="date"
+                        value={editedTodo.dueDate || ''}
+                        onChange={(e) => setEditedTodo({ ...editedTodo, dueDate: e.target.value })}
+                        className="due-date-input"
+                    />
+                    <button onClick={handleSave} className="btn btn-primary btn-sm" title="Save">
+                        <Save size={16} />
+                    </button>
+                    <button onClick={() => setIsEditing(false)} className="btn btn-danger btn-sm" title="Cancel">
+                        <XCircle size={16} />
+                    </button>
+                </>
+            ) : (
+                <>
+                    <span className={`todo-text ${todo.completed ? 'completed' : ''}`}>
+                        {todo.text}
+                    </span>
+                    {todo.dueDate && (
+                        <span className={`due-date ${isDateOverdue(todo.dueDate) ? 'overdue' : ''}`}>
+                            Due: {new Date(todo.dueDate).toLocaleDateString()}
+                        </span>
+                    )}
+                    <button onClick={() => setIsEditing(true)} className="btn btn-primary btn-sm" title="Edit">
+                        <Edit2 size={16} />
+                    </button>
+                    <button onClick={handleDelete} className="btn btn-danger btn-sm" title="Delete">
+                        <Trash2 size={16} />
+                    </button>
+                </>
             )}
-            <button onClick={() => setIsEditing(true)} className="btn btn-primary btn-sm">
-              <Edit2 size={16} />
-            </button>
-            <button
-              onClick={() => deleteTodo(username, todo.id)}
-              className="btn btn-danger btn-sm"
-            >
-              <Trash2 size={16} />
-            </button>
-          </>
-        )}
-      </div>
+        </div>
     );
   };
   
@@ -462,7 +465,7 @@ return (
           ) : (
             <div className="todo-container">
               {/* Current user's todo form */}
-                `<div className="user-todo-column current-user-column">
+                <div className="user-todo-column current-user-column">
                     <div className="column-header current-user-header">
                     My Tasks
                     </div>
