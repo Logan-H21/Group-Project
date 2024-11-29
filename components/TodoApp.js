@@ -381,8 +381,14 @@ const TodoApp = () => {
 
 return (
     <div className="container">
+        <div>
+         <img class="LOGO" src="Group-Logo.png" alt="logo"></img>
+        </div>
       {!isLoggedIn ? (
         <section className="Login">
+          <div>
+            <img class="MLOGO" src="Group-Logo.png" alt="big-logo"></img>
+          </div>
           <div className="auth-container">
             <div className="auth-box">
               <h1 className="auth-title">

@@ -1,14 +1,14 @@
 /* TodoApp.css */
 .container {
     min-height: 100vh;
-    background-color: #f3f4f6;
+    background-color: #f9cd9c;
     padding: 2rem;
     animation: floatUp 0.8s ease-in-out;
   }
   
   .auth-container {
     min-height: 100vh;
-    background-color: #f3f4f6;
+    /* background-color: #f9cd9c; */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -16,15 +16,16 @@
   }
   
   .auth-box {
-    background-color: white;
+    background-color: #50332d;
     padding: 2rem;
     border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 4px rgba(0, 0, 0, 0.1);
     width: 24rem;
   }
   
   .auth-title {
     font-size: 1.5rem;
+    color: white;
     font-weight: bold;
     margin-bottom: 1.5rem;
     text-align: center;
@@ -65,8 +66,8 @@
   }
   
   .btn-primary {
-    background-color: #3b82f6;
-    color: white;
+    background-color: #fbc2b7;
+    color: #50332d;
   }
   
   .btn-primary:hover {
@@ -131,6 +132,7 @@
   
   .todo-form {
     margin-bottom: 2rem;
+    background-color: #50332d;
   }
   
   .todo-input-group {
@@ -146,7 +148,7 @@
   }
   
   .todo-list {
-    background-color: white;
+    background-color: #f9cd9c;
     border-radius: 0.5rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     /* animation: floatUp 0.8s ease-in-out; */
@@ -193,7 +195,7 @@
   }
   
   .empty-message {
-    color: #6b7280;
+    color: #853b22;
     text-align: center;
     padding: 1rem;
   }
@@ -295,6 +297,7 @@
 /* ALL USERS TASKS */
 
 .all-todos-container {
+  padding-top: 10%;
     display: flex;
     gap: 2rem;
     overflow-x: auto;
@@ -322,8 +325,8 @@
   }
   
   .current-user-header {
-    background-color: #dbeafe;
-    color: #1e40af;
+    background-color: #d78152;
+    color: #50332d;
   }
   
   /* Make the todo list scrollable if it gets too long */
@@ -334,7 +337,7 @@
   
   /* Add subtle shadows to differentiate columns */
   .user-todo-column {
-    background: white;
+    background: #50332d;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     padding: 1rem;
@@ -403,3 +406,18 @@
   .admin-todo-item input[type="text"] {
     flex: 1;
   }
+
+/* LOGOO */
+
+.MLOGO {
+  height: 300px;
+  margin-left: 35%;
+  margin-bottom: -15%;
+  animation: floatUp 0.8s ease-in-out;
+}
+
+.LOGO {
+  height: 40px;
+  size: 30px;
+  animation: floatUp 0.8s ease-in-out;
+}
