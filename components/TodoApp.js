@@ -381,8 +381,18 @@ const TodoApp = () => {
 
 return (
     <div className="container">
-        <div>
-         <img class="LOGO" src="Group-Logo.png" alt="logo"></img>
+        <div class="dropdown">
+         <span>
+          <img class="LOGO" src="Group-Logo.png" alt="logo"></img>
+          </span>
+         <div class="dropdown-content">
+            <p>Dog Menu</p>
+            <button>Sup</button>
+            <button onClick={handleLogout} className="logout-btn">
+              <LogOut size={18} />
+              Logout
+            </button>
+         </div>
         </div>
       {!isLoggedIn ? (
         <section className="Login">
