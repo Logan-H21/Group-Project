@@ -1,6 +1,6 @@
 // TodoApp.js
 import React, { useState, useEffect } from 'react';
-import { X, LogOut, PlusIcon, MinusIcon, Trash2, Edit2, Save, XCircle } from 'lucide-react';
+import { X, LogOut, PlusIcon, MinusIcon, Trash2, Edit2, Save, XCircle, Share2, UserPlus, UserMinus, Container } from 'lucide-react';
 import './TodoApp.css';
 
 const TodoApp = () => {
@@ -17,37 +17,77 @@ const TodoApp = () => {
     const [error, setError] = useState('');
     const [showDescription, setShowDescription] = useState(false);
     const [description, setDescription] = useState('');
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [sharedWith, setSharedWith] = useState({});
 
   const ADMIN_USERNAME = 'admin';
   const ADMIN_PASSWORD = 'admin123';
   const ADMIN_EMAIL = 'admin@example.com';
 
-    useEffect(() => {
-      const savedUsers = JSON.parse(localStorage.getItem('users')) || [];
-      const savedTodos = JSON.parse(localStorage.getItem('todos')) || {};
-      
-      // Initialize admin if not exists
-      if (!savedUsers.length) {
-          const initialUsers = [{
-              username: ADMIN_USERNAME,
-              password: ADMIN_PASSWORD,
-              email: ADMIN_EMAIL,
-              isAdmin: true
-          }];
-          localStorage.setItem('users', JSON.stringify(initialUsers));
-      }
-      
-      // Set initial todos if not exists
-      if (!localStorage.getItem('todos')) {
-          localStorage.setItem('todos', JSON.stringify({}));
-      }
+  useEffect(() => {
+    const savedUsers = JSON.parse(localStorage.getItem('users')) || [];
+    const savedTodos = JSON.parse(localStorage.getItem('todos')) || {};
+    const savedSharing = JSON.parse(localStorage.getItem('sharing')) || {};
 
-      // Load all users and todos for admin view
-      if (currentUser === ADMIN_USERNAME) {
-          setAllUsers(savedUsers.filter(user => !user.isAdmin));
-          setAllUsersTodos(savedTodos);
+    // Initialize storage if needed
+    if (!localStorage.getItem('sharing')) {
+        localStorage.setItem('sharing', JSON.stringify({}));
+    }
+    
+    if (!localStorage.getItem('todos')) {
+        localStorage.setItem('todos', JSON.stringify({}));
+    }
+
+    // Initialize admin if not exists
+    if (!savedUsers.length) {
+        const initialUsers = [{
+            username: ADMIN_USERNAME,
+            password: ADMIN_PASSWORD,
+            email: ADMIN_EMAIL,
+            isAdmin: true
+        }];
+        localStorage.setItem('users', JSON.stringify(initialUsers));
+    }
+
+    if (currentUser) {
+        setSharedWith(savedSharing);
+        setTodos(savedTodos[currentUser] || []);
+
+        if (currentUser === ADMIN_USERNAME) {
+            setAllUsers(savedUsers.filter(user => !user.isAdmin));
+            setAllUsersTodos(savedTodos);
+        } else {
+            const sharedTodos = {};
+            Object.entries(savedSharing).forEach(([owner, shared]) => {
+                if (Array.isArray(shared) && shared.includes(currentUser)) {
+                    sharedTodos[owner] = savedTodos[owner] || [];
+                }
+            });
+            setAllUsersTodos(sharedTodos);
+        }
+    }
+  }, [currentUser]);
+
+
+    const handleShare = (targetUser) => {
+      const updatedSharing = { ...sharedWith };
+      
+      if (!updatedSharing[currentUser]) {
+          updatedSharing[currentUser] = [];
       }
-    }, [currentUser]);
+      
+      const isCurrentlyShared = updatedSharing[currentUser].includes(targetUser);
+      if (isCurrentlyShared) {
+          updatedSharing[currentUser] = updatedSharing[currentUser].filter(
+              user => user !== targetUser
+          );
+      } else {
+          updatedSharing[currentUser].push(targetUser);
+      }
+      
+      localStorage.setItem('sharing', JSON.stringify(updatedSharing));
+      setSharedWith(updatedSharing);
+    };
 
 
     const handleInputChange = (e) => {
@@ -99,6 +139,8 @@ const TodoApp = () => {
           setIsAdmin(true);
           setIsLoggedIn(true);
           setError('');
+
+          setAllUsers(users.filter(user => !user.isAdmin));
           return;
         }
     
@@ -114,9 +156,21 @@ const TodoApp = () => {
           setIsLoggedIn(true);
           setError('');
           const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
+          const savedSharing = JSON.parse(localStorage.getItem('sharing')) || {};
           setTodos(allTodos[user.username] || []);
-          setAllUsersTodos(allTodos);
-        } else {
+
+          setAllUsers(users.filter(u => !u.isAdmin && u.username !== user.username));
+          
+          // Load shared todos
+          const sharedTodos = {};
+          Object.entries(savedSharing).forEach(([owner, shared]) => {
+              if (Array.isArray(shared) && shared.includes(user.username)) {
+                  sharedTodos[owner] = allTodos[owner] || [];
+              }
+          });
+          setAllUsersTodos(sharedTodos);
+        }
+        else {
           setError('Invalid username or password');
         }
       };
@@ -327,45 +381,127 @@ const TodoApp = () => {
   };
   
 
-  const TodoList = ({ todos, isCurrentUser, username }) => (
-    <div className="todo-list">
-      {sortTodosByDate(todos).map(todo => (
-        <div key={todo.id} className={`todo-item ${todo.isFadingOut ? 'fade-out' : ''}`}>
-          {isCurrentUser && (
-            <input 
-              type="checkbox" 
-              checked={todo.completed} 
-              onChange={() => toggleTodo(todo.id)} 
-              className="todo-checkbox"
-            />
-          )}
-          <div>
-            <span className={`todo-text ${todo.completed ? 'completed' : ''}`}>
-              {todo.text}
-            </span>
-            {todo.description && (
-              <div className="todo-description">
-                {todo.description}
-              </div>
+  const TodoList = ({ todos, isCurrentUser, username }) => {
+    const isSharedList = !isCurrentUser && username !== currentUser;
+    
+    const handleSharedTodoToggle = (id) => {
+        const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
+        const userTodos = allTodos[username] || [];
+        
+        const updatedTodos = userTodos.map(todo =>
+            todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        );
+        
+        allTodos[username] = updatedTodos;
+        localStorage.setItem('todos', JSON.stringify(allTodos));
+        setAllUsersTodos(prev => ({
+            ...prev,
+            [username]: updatedTodos
+        }));
+    };
+
+    const handleSharedTodoDelete = (id) => {
+        const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
+        const userTodos = allTodos[username] || [];
+        
+        const updatedTodos = userTodos.filter(todo => todo.id !== id);
+        
+        allTodos[username] = updatedTodos;
+        localStorage.setItem('todos', JSON.stringify(allTodos));
+        setAllUsersTodos(prev => ({
+            ...prev,
+            [username]: updatedTodos
+        }));
+    };
+
+    return (
+        <div className="todo-list">
+            {sortTodosByDate(todos).map(todo => (
+                <div key={todo.id} className={`todo-item ${todo.isFadingOut ? 'fade-out' : ''}`}>
+                    {(isCurrentUser || isSharedList) && (
+                        <input 
+                            type="checkbox" 
+                            checked={todo.completed} 
+                            onChange={() => isSharedList ? handleSharedTodoToggle(todo.id) : toggleTodo(todo.id)} 
+                            className="todo-checkbox"
+                        />
+                    )}
+                    <div>
+                        <span className={`todo-text ${todo.completed ? 'completed' : ''}`}>
+                            {todo.text}
+                        </span>
+                        {todo.description && (
+                            <div className="todo-description">
+                                {todo.description}
+                            </div>
+                        )}
+                    </div>
+                    {todo.dueDate && (
+                        <span className={`due-date ${isDateOverdue(todo.dueDate) ? 'overdue' : ''}`}>
+                            Due: {new Date(todo.dueDate).toLocaleDateString()}
+                        </span>
+                    )}
+                    {(isCurrentUser || isSharedList) && (
+                        <button 
+                            onClick={() => isSharedList ? handleSharedTodoDelete(todo.id) : deleteTodo(todo.id)} 
+                            className="delete-btn"
+                        >
+                            <X size={18}/>
+                        </button>
+                    )}
+                </div>
+            ))}
+            {todos.length === 0 && (
+                <p className="empty-message">No tasks yet.</p>
             )}
-          </div>
-          {todo.dueDate && (
-            <span className={`due-date ${isDateOverdue(todo.dueDate) ? 'overdue' : ''}`}>
-              Due: {new Date(todo.dueDate).toLocaleDateString()}
-            </span>
-          )}
-          {isCurrentUser && (
-            <button onClick={() => deleteTodo(todo.id)} className="delete-btn">
-              <X size={18}/>
-            </button>
-          )}
         </div>
-      ))}
-      {todos.length === 0 && (
-        <p className="empty-message">No tasks yet.</p>
-      )}
-    </div>
-  );
+    );
+  };
+
+  const ShareModal = () => {
+    const otherUsers = allUsers.filter(user => user.username !== currentUser);
+    
+    return (
+        <div className="modal-overlay">
+            <div className="share-modal">
+                <h2>Share Todo List</h2>
+                <div className="user-list">
+                    {otherUsers.map(user => (
+                        <div key={user.username} className="share-user-item">
+                            <span>{user.username}</span>
+                            <button
+                                onClick={() => handleShare(user.username)}
+                                className={`logout-btn ${
+                                    sharedWith[currentUser]?.includes(user.username)
+                                        ? 'btn-danger'
+                                        : 'btn-primary'
+                                }`}
+                            >
+                                {sharedWith[currentUser]?.includes(user.username) ? (
+                                    <>
+                                        <UserMinus size={16} />
+                                        Unshare
+                                    </>
+                                ) : (
+                                    <>
+                                        <UserPlus size={16} />
+                                        Share
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    ))}
+                </div>
+                <button
+                    onClick={() => setShowShareModal(false)}
+                    className="btn btn-secondary"
+                >
+                    Close
+                </button>
+            </div>
+        </div>
+    );
+  };
 
 
 
@@ -381,19 +517,6 @@ const TodoApp = () => {
 
 return (
     <div className="container">
-        <div class="dropdown">
-         <span>
-          <img class="LOGO" src="Group-Logo.png" alt="logo"></img>
-          </span>
-         <div class="dropdown-content">
-            <p>Dog Menu</p>
-            <button>Sup</button>
-            <button onClick={handleLogout} className="logout-btn">
-              <LogOut size={18} />
-              Logout
-            </button>
-         </div>
-        </div>
       {!isLoggedIn ? (
         <section className="Login">
           <div>
@@ -466,14 +589,27 @@ return (
         </section>
       ) : (
         <div>
+          <div class="dropdown">
+         <span>
+          <img class="LOGO" src="Group-Logo.png" alt="logo"></img>
+          </span>
+          <div className="dropdown-content">
+            <p>Dog Menu</p>
+            <button onClick={() => setShowShareModal(true)}>
+                <Share2 size={18} />
+                Share Todo List
+            </button>
+            <button onClick={handleLogout} className="logout-btn">
+                <LogOut size={18} />
+                Logout
+            </button>
+          </div>
+        </div>
+          {showShareModal && <ShareModal />}
           <div className="header">
             <h1 className="welcome-text">
               Welcome, {currentUser}! {isAdmin && '(Admin)'}
             </h1>
-            <button onClick={handleLogout} className="logout-btn">
-              <LogOut size={18} />
-              Logout
-            </button>
           </div>
 
           {isAdmin ? (
