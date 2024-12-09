@@ -1,4 +1,4 @@
-/* TodoApp.css */
+
 .container {
   min-height: 100vh;
   background-color: #f9cd9c;
@@ -446,22 +446,22 @@ display: inline-block;
 }
 
 .dropdown-content {
-display: none;
-position: absolute;
-background-color: #d78152;
-min-width: 160px;
-box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-font-weight: 900;
-padding: 12px 16px;
-z-index: 1;
-border-radius: 10px;
-border-color: black;
-border-style: groove;
+  display: none;
+  position: absolute;
+  background-color: #d78152;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  font-weight: 900;
+  padding: 12px 16px;
+  z-index: 1;
+  border-radius: 10px;
+  border-color: black;
+  border-style: groove;
 }
 .dropdown-content button {
-color: black;
-background-color: transparent;
-display: flex;
+  color: black;
+  background-color: transparent;
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
@@ -471,15 +471,15 @@ display: flex;
 }
 
 .dropdown-content button:active {
-transform: translateY(2px);
+  transform: translateY(2px);
 }
 
 .dropdown:hover .dropdown-content {
-animation: grow 0.8s ease;
-display: block;
+  animation: grow 0.8s ease;
+  display: block;
 }
 .LOGO:hover {
-height: 60px;
+  height: 60px;
 }
 
 
@@ -493,8 +493,6 @@ to {
   height: 117px;
 }
 }
-
-/* Add these styles to TodoApp.css */
 
 .modal-overlay {
   position: fixed;

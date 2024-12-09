@@ -1,9 +1,10 @@
-// TodoApp.js
+// import some valubles
 import React, { useState, useEffect } from 'react';
 import { X, LogOut, PlusIcon, MinusIcon, Trash2, Edit2, Save, XCircle, Share2, UserPlus, UserMinus, Container } from 'lucide-react';
 import './TodoApp.css';
 
 const TodoApp = () => {
+  // Initualize
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
@@ -20,11 +21,13 @@ const TodoApp = () => {
     const [showShareModal, setShowShareModal] = useState(false);
     const [sharedWith, setSharedWith] = useState({});
 
+  // Admin Login
   const ADMIN_USERNAME = 'admin';
   const ADMIN_PASSWORD = 'admin123';
   const ADMIN_EMAIL = 'admin@example.com';
 
   useEffect(() => {
+    // claim some useful constants
     const savedUsers = JSON.parse(localStorage.getItem('users')) || [];
     const savedTodos = JSON.parse(localStorage.getItem('todos')) || {};
     const savedSharing = JSON.parse(localStorage.getItem('sharing')) || {};
@@ -34,11 +37,12 @@ const TodoApp = () => {
         localStorage.setItem('sharing', JSON.stringify({}));
     }
     
+    // Initialize todos
     if (!localStorage.getItem('todos')) {
         localStorage.setItem('todos', JSON.stringify({}));
     }
 
-    // Initialize admin if not exists
+    // Initialize admin if does not exists
     if (!savedUsers.length) {
         const initialUsers = [{
             username: ADMIN_USERNAME,
@@ -49,7 +53,7 @@ const TodoApp = () => {
         localStorage.setItem('users', JSON.stringify(initialUsers));
     }
 
-    if (currentUser) {
+    if (currentUser) { // checks and makes sure the current user is an admin or is currently sharring todos
         setSharedWith(savedSharing);
         setTodos(savedTodos[currentUser] || []);
 
@@ -69,7 +73,7 @@ const TodoApp = () => {
   }, [currentUser]);
 
 
-    const handleShare = (targetUser) => {
+    const handleShare = (targetUser) => { // updates todos and users for sharring
       const updatedSharing = { ...sharedWith };
       
       if (!updatedSharing[currentUser]) {
@@ -97,7 +101,7 @@ const TodoApp = () => {
         });
     };
 
-    const handleRegister = (e) => {
+    const handleRegister = (e) => { // Help user create a new account
         e.preventDefault();
         const users = JSON.parse(localStorage.getItem('users')) || [];
         
@@ -106,17 +110,17 @@ const TodoApp = () => {
           return;
         }
     
-        const newUser = {
+        const newUser = { // template for new user
           username: formData.username,
           password: formData.password,
           email: formData.email,
           isAdmin: false
         };
     
-        users.push(newUser);
+        users.push(newUser); // adds to the list of users
         localStorage.setItem('users', JSON.stringify(users));
         
-        const todos = JSON.parse(localStorage.getItem('todos')) || {};
+        const todos = JSON.parse(localStorage.getItem('todos')) || {}; // syncs todos with current user
         todos[formData.username] = [];
         localStorage.setItem('todos', JSON.stringify(todos));
         
@@ -125,7 +129,7 @@ const TodoApp = () => {
         setFormData({ username: '', password: '', email: '' });
       };
 
-      const handleLogin = (e) => {
+      const handleLogin = (e) => { // Handles log in for users and admins
         e.preventDefault();
         const users = JSON.parse(localStorage.getItem('users')) || [];
         
@@ -151,7 +155,7 @@ const TodoApp = () => {
                u.email === formData.email
         );
     
-        if (user) {
+        if (user) { // syncs all todos and shared todos
           setCurrentUser(user.username);
           setIsLoggedIn(true);
           setError('');
@@ -175,7 +179,7 @@ const TodoApp = () => {
         }
       };
 
-      const handleLogout = () => {
+      const handleLogout = () => { // allows the user to logout
         setIsLoggedIn(false);
         setIsAdmin(false);
         setCurrentUser(null);
@@ -183,7 +187,7 @@ const TodoApp = () => {
         setFormData({ username: '', password: '', email: '' });
       };
 
-      const deleteUser = (username) => {
+      const deleteUser = (username) => { // (ADMIN MENU) Allows admin to remove users and todos
         if (!isAdmin) return;
 
         // Update users in localStorage
@@ -201,7 +205,7 @@ const TodoApp = () => {
         setAllUsersTodos(todos);
       };
 
-      const editTodo = (username, todoId, updatedTodo) => {
+      const editTodo = (username, todoId, updatedTodo) => { // Allows admin to edit todos
         if (!isAdmin) return;
 
         const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
@@ -219,7 +223,7 @@ const TodoApp = () => {
         setAllUsersTodos({ ...allTodos });
       };
 
-    const addTodo = (e) => {
+    const addTodo = (e) => { // template for adding todos
         e.preventDefault();
         if (!newTodo.trim()) return;
 
@@ -245,7 +249,7 @@ const TodoApp = () => {
             setShowDescription(false);
     };
 
-    const toggleTodo = (id) => {
+    const toggleTodo = (id) => { // lets user check a todo if completed
         const updatedTodos = todos.map(todo =>
         todo.id === id ? { ...todo, completed: !todo.completed } : todo
         );
@@ -256,7 +260,7 @@ const TodoApp = () => {
         localStorage.setItem('todos', JSON.stringify(allTodos));
     };
 
-    const deleteTodo = (id) => {
+    const deleteTodo = (id) => { // allows user to remove a todo from their respective todo lists
         const updatedTodos = todos.map(todo => 
         todo.id === id ? { ...todo, isFadingOut: true } : todo
         );
@@ -272,7 +276,7 @@ const TodoApp = () => {
         }, 500);
     };
 
-    const isDateOverdue = (date) => {
+    const isDateOverdue = (date) => { // checks if the date is past due
         if (!date) return false;
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Reset time to start of day
@@ -291,7 +295,7 @@ const TodoApp = () => {
   };
 
   // Admin Components
-  const AdminPanel = () => (
+  const AdminPanel = () => ( // HTML for Admin pannel
     <div className="admin-panel">
         <h2 className="admin-title">Admin Dashboard</h2>
         <div className="user-management">
@@ -316,7 +320,7 @@ const TodoApp = () => {
     </div>
 );
 
-  const AdminTodoItem = ({ todo, username }) => {
+  const AdminTodoItem = ({ todo, username }) => { // Allows admin to edit todos + HTML
     const [isEditing, setIsEditing] = useState(false);
     const [editedTodo, setEditedTodo] = useState({ ...todo });
 
@@ -381,10 +385,10 @@ const TodoApp = () => {
   };
   
 
-  const TodoList = ({ todos, isCurrentUser, username }) => {
+  const TodoList = ({ todos, isCurrentUser, username }) => { // Standards todo list for users
     const isSharedList = !isCurrentUser && username !== currentUser;
     
-    const handleSharedTodoToggle = (id) => {
+    const handleSharedTodoToggle = (id) => { // Allows sharring between users
         const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
         const userTodos = allTodos[username] || [];
         
@@ -400,7 +404,7 @@ const TodoApp = () => {
         }));
     };
 
-    const handleSharedTodoDelete = (id) => {
+    const handleSharedTodoDelete = (id) => { // Allows users with shared todos to delete todos
         const allTodos = JSON.parse(localStorage.getItem('todos')) || {};
         const userTodos = allTodos[username] || [];
         
@@ -414,7 +418,7 @@ const TodoApp = () => {
         }));
     };
 
-    return (
+    return ( // HTML for the shared todos 
         <div className="todo-list">
             {sortTodosByDate(todos).map(todo => (
                 <div key={todo.id} className={`todo-item ${todo.isFadingOut ? 'fade-out' : ''}`}>
@@ -458,7 +462,7 @@ const TodoApp = () => {
     );
   };
 
-  const ShareModal = () => {
+  const ShareModal = () => { // html for the sharring popup
     const otherUsers = allUsers.filter(user => user.username !== currentUser);
     
     return (
